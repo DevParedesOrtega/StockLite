@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="StockLite: control de productos, existencias y movimientos de inventario.">
+  <title>StockLite | Control de inventario</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="encabezado">
+    <a class="marca" href="#resumen">
+      <span class="marca-icono">S</span>
+      <span class="marca-texto">
+        <strong>StockLite</strong>
+        <small>Inventario</small>
+      </span>
+    </a>
+
+    <nav class="navegacion" aria-label="Navegación principal">
+      <a href="#resumen">Resumen</a>
+      <a href="#productos">Productos</a>
+      <a href="#registrar-producto">Nuevo producto</a>
+      <a href="#movimientos">Movimientos</a>
+      <a href="#kardex">Kardex</a>
+      <a href="#reportes">Reportes</a>
+    </nav>
+
+    <span class="estado-proyecto" id="estado-almacenamiento">Datos de ejemplo</span>
+  </header>
+
+  <main class="contenedor">
+    <section class="bienvenida" id="resumen">
+      <div>
+        <p class="texto-seccion">01 · RESUMEN DEL INVENTARIO</p>
+        <h1>Control de inventario</h1>
+        <p>Consulta los productos, revisa sus existencias y registra entradas o salidas.</p>
+        <small class="nota-datos">Los nombres y cantidades que aparecen son datos de ejemplo.</small>
+      </div>
+      <a class="boton boton-principal" href="#registrar-producto">Nuevo producto</a>
+    </section>
+
+    <section class="tarjetas-resumen" aria-label="Indicadores del inventario">
+      <article class="tarjeta-resumen">
+        <span class="resumen-titulo">Productos activos</span>
+        <strong id="total-productos">5</strong>
+      </article>
+      <article class="tarjeta-resumen">
+        <span class="resumen-titulo">Unidades disponibles</span>
+        <strong id="total-unidades">77</strong>
+      </article>
+      <article class="tarjeta-resumen tarjeta-alerta">
+        <span class="resumen-titulo">Para reponer</span>
+        <strong id="productos-reponer">2</strong>
+      </article>
+      <article class="tarjeta-resumen tarjeta-exceso">
+        <span class="resumen-titulo">Sobre el máximo</span>
+        <strong id="productos-excedidos">1</strong>
+      </article>
+    </section>
+
+    <section class="panel" id="productos">
+      <div class="titulo-panel">
+        <div>
+          <p class="etiqueta-panel">02 · CATÁLOGO</p>
+          <h2>Productos</h2>
+          <p>Consulta existencias, edita datos y conserva los productos fuera de operación.</p>
+        </div>
+        <a class="boton boton-secundario" href="#registrar-producto">Agregar producto</a>
+      </div>
+
+      <div class="controles-catalogo">
+        <label for="filtro-productos">Mostrar</label>
+        <select id="filtro-productos">
+          <option value="todos">Todos los productos</option>
+          <option value="activos">Solo activos</option>
+          <option value="inactivos">Solo inactivos</option>
+        </select>
+        <small>Los productos inactivos se conservan y pueden reactivarse.</small>
+      </div>
+
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th>Existencia</th>
+              <th>Mínimo</th>
+              <th>Máximo</th>
+              <th>Estado de stock</th>
+              <th>Disponibilidad</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-productos">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="dos-columnas">
+      <section class="panel" id="registrar-producto">
+        <div class="titulo-panel titulo-panel-compacto">
+          <div>
+            <p class="etiqueta-panel">03 · ALTA DE PRODUCTO</p>
+            <h2 id="titulo-formulario-producto">Registrar producto</h2>
+            <p id="texto-formulario-producto">Agrega un artículo y define sus niveles de inventario.</p>
+          </div>
+        </div>
+
+        <form id="formulario-producto">
+          <div class="campo">
+            <label for="codigo">Código</label>
+            <input id="codigo" name="codigo" type="text" placeholder="Ej. PRD-006" required>
+          </div>
+
+          <div class="campo">
+            <label for="nombre">Nombre del producto</label>
+            <input id="nombre" name="nombre" type="text" placeholder="Ej. Audífonos" required>
+          </div>
+
+          <div class="campos-juntos">
+            <div class="campo">
+              <label for="categoria">Categoría</label>
+              <input id="categoria" name="categoria" type="text" placeholder="Ej. Accesorios">
+            </div>
+            <div class="campo">
+              <label for="unidad">Unidad</label>
+              <select id="unidad" name="unidad">
+                <option value="pieza">Pieza</option>
+                <option value="caja">Caja</option>
+                <option value="paquete">Paquete</option>
+                <option value="kilogramo">Kilogramo</option>
+                <option value="litro">Litro</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="campos-juntos">
+            <div class="campo">
+              <label for="minimo">Existencia mínima</label>
+              <input id="minimo" name="minimo" type="number" min="0" step="0.01" placeholder="5" required>
+            </div>
+            <div class="campo">
+              <label for="maximo">Existencia máxima</label>
+              <input id="maximo" name="maximo" type="number" min="0" step="0.01" placeholder="30" required>
+            </div>
+          </div>
+
+          <div id="campos-existencia-inicial">
+            <div class="separador-formulario"></div>
+            <h3>Existencia inicial</h3>
+            <p class="nota-formulario">La existencia inicial se guarda junto con los datos del producto.</p>
+
+            <div class="campos-juntos">
+            <div class="campo">
+              <label for="existencia-inicial">Cantidad inicial</label>
+              <input id="existencia-inicial" name="existencia-inicial" type="number" min="0" step="0.01" placeholder="0">
+            </div>
+              <div class="campo">
+                <label for="costo-inicial">Costo unitario (MXN)</label>
+                <input id="costo-inicial" name="costo-inicial" type="number" min="0" step="0.01" placeholder="0.00">
+              </div>
+            </div>
+          </div>
+
+          <p id="mensaje-producto" class="mensaje-formulario" role="status" aria-live="polite"></p>
+          <div class="acciones-formulario">
+            <button id="boton-guardar-producto" class="boton boton-principal boton-completo" type="submit">Guardar producto</button>
+            <button id="cancelar-edicion" class="boton boton-secundario boton-completo" type="button" hidden>Cancelar edición</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" id="movimientos">
+        <div class="titulo-panel titulo-panel-compacto">
+          <div>
+            <p class="etiqueta-panel">04 · MOVIMIENTOS</p>
+            <h2>Registrar movimiento</h2>
+            <p>Registra las entradas y salidas de mercancía.</p>
+          </div>
+        </div>
+
+        <form id="formulario-movimiento">
+          <div class="campo">
+            <label for="producto-movimiento">Producto</label>
+            <select id="producto-movimiento" name="producto-movimiento" required>
+              <option value="">Selecciona un producto</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label for="fecha-movimiento">Fecha del movimiento</label>
+            <input id="fecha-movimiento" name="fecha-movimiento" type="date" required>
+            <small class="ayuda-campo">Registra los movimientos en orden cronológico.</small>
+          </div>
+
+          <div class="campos-juntos">
+            <div class="campo">
+              <label for="tipo-movimiento">Tipo</label>
+              <select id="tipo-movimiento" name="tipo-movimiento">
+                <option value="entrada">Entrada</option>
+                <option value="salida">Salida</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="motivo">Motivo</label>
+              <select id="motivo" name="motivo">
+                <option value="compra">Compra</option>
+                <option value="devolucion">Devolución</option>
+                <option value="ajuste">Ajuste de entrada</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="cantidad">Cantidad</label>
+            <input id="cantidad" name="cantidad" type="number" min="0.01" step="0.01" placeholder="Ej. 5" required>
+          </div>
+
+          <div class="campo" id="campo-costo-entrada">
+            <label for="costo-compra">Costo unitario de entrada (MXN)</label>
+            <input id="costo-compra" name="costo-compra" type="number" min="0" step="0.01" placeholder="Costo por unidad">
+          </div>
+
+          <div class="campo" id="campo-precio-venta" hidden>
+            <label for="precio-venta">Precio unitario de venta (MXN)</label>
+            <input id="precio-venta" name="precio-venta" type="number" min="0.01" step="0.01" placeholder="Precio por unidad">
+          </div>
+
+          <p id="informacion-costo-salida" class="nota-formulario" hidden></p>
+
+          <div class="campo">
+            <label for="nota-movimiento">Nota</label>
+            <textarea id="nota-movimiento" name="nota-movimiento" rows="2" placeholder="Observaciones del movimiento"></textarea>
+          </div>
+
+          <p id="mensaje-movimiento" class="mensaje-formulario" role="status" aria-live="polite"></p>
+          <button class="boton boton-principal boton-completo" type="submit">Registrar movimiento</button>
+        </form>
+      </section>
+    </section>
+
+    <section class="panel" id="kardex">
+      <div class="titulo-panel titulo-panel-kardex">
+        <div>
+          <p class="etiqueta-panel">05 · HISTORIAL</p>
+          <h2>Kardex</h2>
+          <p>Consulta las entradas, salidas, costos y saldos de cada producto.</p>
+        </div>
+        <div class="selector-kardex">
+          <label for="filtro-kardex">Producto</label>
+          <select id="filtro-kardex"></select>
+        </div>
+      </div>
+
+      <span class="producto-seleccionado" id="producto-seleccionado">Selecciona un producto</span>
+
+      <div class="resumen-kardex">
+        <article class="dato-kardex">
+          <span>Existencia actual</span>
+          <strong id="saldo-kardex">—</strong>
+        </article>
+        <article class="dato-kardex">
+          <span>Costo promedio actual</span>
+          <strong id="costo-promedio-kardex">—</strong>
+        </article>
+        <article class="dato-kardex">
+          <span>Valor del inventario</span>
+          <strong id="valor-inventario-kardex">—</strong>
+        </article>
+      </div>
+
+      <div class="tabla-contenedor">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Movimiento</th>
+              <th>Entrada</th>
+              <th>Salida</th>
+              <th>Costo unitario</th>
+              <th>Importe costo</th>
+              <th>Precio venta</th>
+              <th>Saldo</th>
+              <th>Costo promedio</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-kardex"></tbody>
+        </table>
+      </div>
+      <p class="nota-formulario">Los saldos iniciales corresponden a las existencias registradas cuando se habilitó el Kardex.</p>
+    </section>
+
+    <section class="panel" id="reportes">
+      <div class="titulo-panel">
+        <div>
+          <p class="etiqueta-panel">06 · REPORTES Y CONSULTAS</p>
+          <h2>Reportes de inventario</h2>
+          <p>Consulta el valor actual del inventario y revisa las operaciones registradas.</p>
+        </div>
+        <button class="boton boton-secundario" id="exportar-reporte" type="button">Exportar movimientos CSV</button>
+      </div>
+
+      <div class="filtros-reportes">
+        <div class="filtro-reporte">
+          <label for="reporte-desde">Desde</label>
+          <input id="reporte-desde" type="date">
+        </div>
+        <div class="filtro-reporte">
+          <label for="reporte-hasta">Hasta</label>
+          <input id="reporte-hasta" type="date">
+        </div>
+        <div class="filtro-reporte">
+          <label for="reporte-tipo">Tipo de movimiento</label>
+          <select id="reporte-tipo">
+            <option value="todos">Todos</option>
+            <option value="entrada">Entradas</option>
+            <option value="salida">Salidas</option>
+          </select>
+        </div>
+        <div class="filtro-reporte">
+          <label for="reporte-motivo">Motivo</label>
+          <select id="reporte-motivo">
+            <option value="todos">Todos los motivos</option>
+            <option value="compra">Compras</option>
+            <option value="venta">Ventas</option>
+            <option value="devolucion">Devoluciones</option>
+            <option value="danio">Daños</option>
+            <option value="uso-interno">Uso interno</option>
+            <option value="ajuste">Ajustes</option>
+            <option value="saldo-inicial">Saldos iniciales</option>
+          </select>
+        </div>
+        <div class="filtro-reporte">
+          <label for="reporte-producto">Producto</label>
+          <select id="reporte-producto">
+            <option value="todos">Todos los productos</option>
+          </select>
+        </div>
+        <button class="boton boton-secundario boton-limpiar-filtros" id="limpiar-filtros-reporte" type="button">Limpiar filtros</button>
+      </div>
+
+      <p id="mensaje-reporte" class="mensaje-formulario" role="status" aria-live="polite"></p>
+      <p class="texto-resultados" id="cantidad-resultados-reporte">Mostrando todos los movimientos.</p>
+
+      <h3 class="titulo-reporte-secundario">Estado actual del inventario</h3>
+      <div class="tarjetas-resumen tarjetas-reportes">
+        <article class="tarjeta-resumen tarjeta-valor">
+          <span class="resumen-titulo">Valor del inventario</span>
+          <strong id="reporte-valor-inventario">$0.00</strong>
+        </article>
+        <article class="tarjeta-resumen">
+          <span class="resumen-titulo">Productos activos</span>
+          <strong id="reporte-productos-activos">0</strong>
+        </article>
+        <article class="tarjeta-resumen tarjeta-alerta">
+          <span class="resumen-titulo">Para reponer</span>
+          <strong id="reporte-stock-bajo">0</strong>
+        </article>
+        <article class="tarjeta-resumen tarjeta-exceso">
+          <span class="resumen-titulo">Agotados</span>
+          <strong id="reporte-agotados">0</strong>
+        </article>
+      </div>
+      <p class="nota-formulario">El valor actual considera las existencias de todos los productos, incluidos los inactivos.</p>
+
+      <h3 class="titulo-reporte-secundario">Resumen del período seleccionado</h3>
+      <div class="metricas-periodo">
+        <article class="metrica-reporte">
+          <span>Compras registradas</span>
+          <strong id="reporte-compras">$0.00</strong>
+          <small id="reporte-cantidad-compras">0 unidades</small>
+        </article>
+        <article class="metrica-reporte">
+          <span>Costo de las salidas</span>
+          <strong id="reporte-costo-salidas">$0.00</strong>
+          <small id="reporte-cantidad-salidas">0 unidades</small>
+        </article>
+        <article class="metrica-reporte">
+          <span>Importe de ventas</span>
+          <strong id="reporte-ventas">$0.00</strong>
+          <small>Precio de venta × cantidad</small>
+        </article>
+        <article class="metrica-reporte">
+          <span>Utilidad bruta en ventas</span>
+          <strong id="reporte-utilidad">$0.00</strong>
+          <small>Ventas menos costo de venta</small>
+        </article>
+      </div>
+      <p class="nota-formulario">La utilidad mostrada es bruta: no descuenta gastos, impuestos, comisiones ni otros costos operativos.</p>
+
+      <div class="bloque-reporte">
+        <div class="titulo-bloque-reporte">
+          <div>
+            <h3>Productos que requieren atención</h3>
+            <p>Existencias actuales comparadas con los niveles mínimo y máximo.</p>
+          </div>
+        </div>
+        <div class="tabla-contenedor">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Producto</th>
+                <th>Existencia</th>
+                <th>Mínimo</th>
+                <th>Máximo</th>
+                <th>Valor actual</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-alertas-reporte"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bloque-reporte">
+        <div class="titulo-bloque-reporte">
+          <div>
+            <h3>Detalle de movimientos</h3>
+            <p>Compras, ventas, devoluciones, ajustes y demás operaciones según los filtros.</p>
+          </div>
+        </div>
+        <div class="tabla-contenedor">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Código</th>
+                <th>Producto</th>
+                <th>Movimiento</th>
+                <th>Cantidad</th>
+                <th>Costo unitario</th>
+                <th>Importe costo</th>
+                <th>Importe venta</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-movimientos-reporte"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie-pagina">
+    StockLite · Jorge Paredes Ortega
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
